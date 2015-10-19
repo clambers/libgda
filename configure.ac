@@ -14,6 +14,7 @@ m4_include(m4/firebird.m4)
 m4_include(m4/oracle.m4)
 m4_include(m4/java.m4)
 m4_include(m4/ldap.m4)
+m4_include(m4/oslc.m4)
 m4_include(m4/misc.m4)
 
 AC_INIT([GNU Data Access],[major.minor.micro],[https://bugzilla.gnome.org/enter_bug.cgi?product=libgda],[libgda],[http://www.gnome-db.org])
@@ -454,7 +455,7 @@ if test x"$have_gio" = "xyes"
 then
         GIO_CFLAGS="$GIO_CFLAGS -DHAVE_GIO"
 else
-        AC_MSG_WARN([Libgda depends on Gio to provide notification when configuration files are changed, without Gio support any application using Libgda will have to be restarted when configuration files are changed to take into account those changes]) 
+        AC_MSG_WARN([Libgda depends on Gio to provide notification when configuration files are changed, without Gio support any application using Libgda will have to be restarted when configuration files are changed to take into account those changes])
 fi
 AC_SUBST(GIO_CFLAGS)
 AC_SUBST(GIO_LIBS)
@@ -724,6 +725,9 @@ FIREBIRD_CHECK($lib)
 dnl Test for MDB Tools (for MS Access files)
 MDBTOOLS_CHECK([$lib])
 
+dnl Test for OSLC
+OSLC_CHECK([$lib])
+
 dnl test for system-installed SQLite
 dnl If no SQLite is found or if the SQLite found does not have the sqlite3_table_column_metadata()
 dnl function call, then use the embedded version
@@ -939,17 +943,17 @@ AC_ARG_ENABLE(default-binary,
 
 AM_CONDITIONAL(DEFAULT_BINARY, test "x$enable_default_binary" = xyes)
 
-# We use -Wno-address because SQLITE3_CALL() has an ifdefed definition that 
+# We use -Wno-address because SQLITE3_CALL() has an ifdefed definition that
 #   makes it hard to always avoid the warning.
 # We use -Wno-unused-variable because the lemon parser generator (in libgda's sources),
-#   creates some generic macros that declare variables that are not always used. 
+#   creates some generic macros that declare variables that are not always used.
 # We use -Wno-unused-parameter because the lemon parser generator (in libgda's sources),
 #   produces generic code, and it's hard to fix that generated code.
 # We use -Wno-pointer-sign because the sqlite source code (copied into libgda's sources)
 #   has problems but we do not want to patch that code.
-# We use -Wno-missing-field-initializers because recent glib versions introduced this 
+# We use -Wno-missing-field-initializers because recent glib versions introduced this
 #  and they refuse to fix it: https://bugzilla.gnome.org/show_bug.cgi?id=662797
-#  We should remove -Wno-missing-field-initializers when we replace the use of 
+#  We should remove -Wno-missing-field-initializers when we replace the use of
 #  the deprecated G_STATIC_MUTEX_INIT macro.
 DK_ARG_ENABLE_WARNINGS([COREDEPS_WFLAGS],
 	[-Wall],
@@ -1014,6 +1018,8 @@ providers/skel-implementation/models/Makefile
 providers/skel-implementation/models/libgda-models-6.0.pc
 providers/sqlcipher/Makefile
 providers/sqlcipher/libgda-sqlcipher-6.0.pc
+providers/oslc/Makefile
+providers/oslc/libgda-oslc-6.0.pc
 libgda-report/Makefile
 libgda-report/engine/Makefile
 libgda-report/DocBook/Makefile
@@ -1125,6 +1131,7 @@ echo "      SQLCipher = `if test x$enable_crypto != xyes; then echo no; else ech
 echo "      JDBC = $java_found"
 echo "      WEB = `if test x$have_libsoup = xyes; then echo yes; else echo no; fi`"
 echo "      LDAP = `if test x$ldap_found = xyes; then echo yes; else echo no; fi`"
+echo "      OSLC = `if test xyes = xyes; then echo yes; else echo no; fi`"
 if test x"$br_cv_binreloc" != "xyes" -a x"$platform_win32" != "xyes"
 then
        echo "   Binreloc support is disabled: Libgda will not be relocatable. To enable binreloc support re-run with --enable-binreloc (see http://autopackage.org/docs/binreloc for more information)"

@@ -1,4 +1,4 @@
-if BDB 
+if BDB
 GDA_BDB_SERVER=bdb
 endif
 
@@ -42,6 +42,10 @@ if LDAP
 GDA_LDAP_SERVER=ldap
 endif
 
+if OSLC
+GDA_OSLC_SERVER=oslc
+endif
+
 SUBDIRS = \
 	reuseable \
 	sqlite \
@@ -56,5 +60,5 @@ SUBDIRS = \
 	$(GDA_WEB_SERVER) \
 	$(GDA_SQLCIPHER_SERVER) \
 	$(GDA_LDAP_SERVER) \
-	$(GDA_FIREBIRD_SERVER) 
-
+	$(GDA_FIREBIRD_SERVER) \
+	$(GDA_OSLC_SERVER)

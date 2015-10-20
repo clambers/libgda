@@ -18,9 +18,11 @@
  */
 
 #undef GDA_DISABLE_DEPRECATED
+
 #include <stdlib.h>
 #include <string.h>
 #include <glib/gi18n-lib.h>
+#include <gio/gio.h>
 #include <libgda/gda-util.h>
 #include <libgda/gda-server-provider-impl.h>
 #include <libgda/gda-server-provider-extra.h>
@@ -36,15 +38,38 @@ static const gchar *gda_oslc_provider_get_name (GdaServerProvider *provider);
 static const gchar *gda_oslc_provider_get_version(GdaServerProvider *provider);
 static const gchar *gda_oslc_provider_get_server_version(GdaServerProvider *provider,
                                                          GdaConnection *cnc);
+static gboolean gda_oslc_provider_supports_feature(GdaServerProvider *provider,
+                                                   GdaConnection *cnc,
+                                                   GdaConnectionFeature feature);
 static GdaWorker *gda_oslc_provider_create_worker(GdaServerProvider *provider,
-                                                 gboolean for_cnc);
+                                                  gboolean for_cnc);
 static GdaConnection *gda_oslc_provider_create_connection(GdaServerProvider *provider);
+static gchar *gda_oslc_provider_statement_to_sql(GdaServerProvider *provider,
+                                                 GdaConnection *cnc,
+                                                 GdaStatement *stmt,
+                                                 GdaSet *params,
+                                                 GdaStatementSqlFlag flags,
+                                                 GSList **params_used,
+                                                 GError **error);
+static GdaSqlStatement *gda_oslc_provider_statement_rewrite(GdaServerProvider *provider,
+                                                            GdaConnection *cnc,
+                                                            GdaStatement *stmt,
+                                                            GdaSet *params,
+                                                            GError **error);
+static gboolean gda_oslc_provider_open_connection(GdaServerProvider *provider,
+                                                  GdaConnection *cnc,
+                                                  GdaQuarkList *params,
+                                                  GdaQuarkList *auth);
 static gboolean gda_oslc_provider_prepare_connection(GdaServerProvider *provider,
                                                      GdaConnection *cnc,
                                                      GdaQuarkList *params,
                                                      GdaQuarkList *auth);
 static gboolean gda_oslc_provider_close_connection(GdaServerProvider *provider,
                                                    GdaConnection *cnc);
+static gboolean gda_oslc_provider_statement_prepare(GdaServerProvider *provider,
+                                                    GdaConnection *cnc,
+                                                    GdaStatement *stmt,
+                                                    GError **error);
 static GObject *gda_oslc_provider_statement_execute(GdaServerProvider *provider,
                                                     GdaConnection *cnc,
                                                     GdaStatement *stmt,
@@ -56,14 +81,11 @@ static GObject *gda_oslc_provider_statement_execute(GdaServerProvider *provider,
 
 static GObjectClass *parent_class = NULL;
 
-/*
- * GdaOslcProvider class implementation
- */
 GdaServerProviderBase oslc_base_functions = {
 	gda_oslc_provider_get_name,
 	gda_oslc_provider_get_version,
 	gda_oslc_provider_get_server_version,
-	NULL,
+	gda_oslc_provider_supports_feature,
 	gda_oslc_provider_create_worker,
 	gda_oslc_provider_create_connection,
 	NULL,
@@ -72,10 +94,10 @@ GdaServerProviderBase oslc_base_functions = {
 	NULL,
 	NULL,
 	NULL,
+	gda_oslc_provider_statement_to_sql,
 	NULL,
-	NULL,
-	NULL,
-	NULL,
+	gda_oslc_provider_statement_rewrite,
+	gda_oslc_provider_open_connection,
 	gda_oslc_provider_prepare_connection,
 	gda_oslc_provider_close_connection,
 	NULL,
@@ -87,7 +109,7 @@ GdaServerProviderBase oslc_base_functions = {
 	NULL,
 	NULL,
 	NULL,
-	NULL,
+	gda_oslc_provider_statement_prepare,
 	gda_oslc_provider_statement_execute,
 
 	NULL, NULL, NULL, NULL, /* padding */
@@ -181,21 +203,95 @@ gda_oslc_provider_get_version (G_GNUC_UNUSED GdaServerProvider *provider)
 static const gchar *gda_oslc_provider_get_server_version(GdaServerProvider *provider,
                                                          GdaConnection *cnc)
 {
-  /* not implemented */
+  g_warning("gda_oslc_provider_get_server_version not implemented");
   return "0.0";
+}
+
+static gboolean gda_oslc_provider_supports_feature(GdaServerProvider *provider,
+                                                   GdaConnection *cnc,
+                                                   GdaConnectionFeature feature)
+{
+  g_warning("gda_oslc_provider_supports_feature not implemented");
+  return FALSE;
 }
 
 static GdaWorker *gda_oslc_provider_create_worker(GdaServerProvider *provider,
                                                   gboolean for_cnc)
 {
-  /* not implemented */
-  return NULL;
+  static GdaWorker *unique_worker = NULL;
+
+  if (for_cnc)
+    return gda_worker_new();
+  return gda_worker_new_unique(&unique_worker, TRUE);
 }
 
 static GdaConnection *gda_oslc_provider_create_connection(GdaServerProvider *provider)
 {
-  /* not implemented */
+  g_warning("gda_oslc_provider_create_connection not implemented");
   return NULL;
+}
+
+static gchar *gda_oslc_provider_statement_to_sql(GdaServerProvider *provider,
+                                                 GdaConnection *cnc,
+                                                 GdaStatement *stmt,
+                                                 GdaSet *params,
+                                                 GdaStatementSqlFlag flags,
+                                                 GSList **params_used,
+                                                 GError **error)
+{
+  g_warning("gda_oslc_provider_statement_to_sql not implemented");
+  return NULL;
+}
+
+static GdaSqlStatement *gda_oslc_provider_statement_rewrite(GdaServerProvider *provider,
+                                                            GdaConnection *cnc,
+                                                            GdaStatement *stmt,
+                                                            GdaSet *params,
+                                                            GError **error)
+{
+  g_warning("gda_oslc_provider_statement_rewrite not implemented");
+  return NULL;
+}
+
+static gboolean gda_oslc_provider_open_connection(GdaServerProvider *provider,
+                                                  GdaConnection *cnc,
+                                                  GdaQuarkList *params,
+                                                  GdaQuarkList *auth)
+{
+  GFile *f;
+  GInputStream *is;
+  GError *err;
+  gssize res;
+  gchar buf[4096];
+  OslcConnectionData *ocd;
+
+  err = NULL;
+
+  ocd = g_malloc(sizeof(OslcConnectionData));
+  ocd->root = g_string_new(NULL);
+
+  f = g_file_new_for_uri("https://rtc.nginfot.net:9443/ccm/rootservices");
+  is = G_INPUT_STREAM(g_file_read(f, NULL, &err));
+
+  if (!is)
+    g_error("input stream broken");
+
+  while ((res = g_input_stream_read(is, buf, 4096, NULL, &err)) > 0) {
+    g_string_append_len(ocd->root, buf, res);
+    g_message("%li bytes read", res);
+  }
+
+  if (!res)
+    g_message("read operation complete");
+  else if (res == -1)
+    g_error("read operation broken");
+
+  g_object_unref(is);
+  g_object_unref(f);
+
+  gda_connection_internal_set_provider_data(cnc, (GdaServerProviderConnectionData *)ocd, NULL);
+
+  return FALSE;
 }
 
 static gboolean gda_oslc_provider_prepare_connection(GdaServerProvider *provider,
@@ -203,14 +299,23 @@ static gboolean gda_oslc_provider_prepare_connection(GdaServerProvider *provider
                                                      GdaQuarkList *params,
                                                      GdaQuarkList *auth)
 {
-  /* not implemented */
+  g_warning("gda_oslc_provider_prepare_connection not implemented");
   return FALSE;
 }
 
 static gboolean gda_oslc_provider_close_connection(GdaServerProvider *provider,
                                                    GdaConnection *cnc)
 {
-  /* not implemented */
+  g_warning("gda_oslc_provider_close_connection not implemented");
+  return FALSE;
+}
+
+static gboolean gda_oslc_provider_statement_prepare(GdaServerProvider *provider,
+                                                    GdaConnection *cnc,
+                                                    GdaStatement *stmt,
+                                                    GError **error)
+{
+  g_warning("gda_oslc_provider_statement_prepare not implemented");
   return FALSE;
 }
 
@@ -223,6 +328,6 @@ static GObject *gda_oslc_provider_statement_execute(GdaServerProvider *provider,
                                                     GdaSet **last_inserted_row,
                                                     GError **error)
 {
-  /* not implemented */
+  g_warning("gda_oslc_provider_statement_execute not implemented");
   return NULL;
 }

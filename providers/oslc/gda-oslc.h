@@ -31,6 +31,7 @@
 
 typedef struct {
   GdaServerProviderConnectionData parent;
+  GString *root;
 } OslcConnectionData;
 
 #endif

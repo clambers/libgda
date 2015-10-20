@@ -6,6 +6,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/libgda \
 	-I$(top_builddir) \
 	$(COREDEPS_CFLAGS) \
+	$(COREDEPS_WFLAGS) \
 	$(OSLC_CFLAGS)
 
 libgda_oslc_la_SOURCES = \
@@ -21,7 +22,7 @@ libgda_oslc_la_LIBADD = \
 	$(COREDEPS_LIBS) \
 	$(OSLC_LIBS)
 
-xmldir   = $(datadir)/libgda-6.0
+xmldir = $(datadir)/libgda-6.0
 xml_in_files = \
 	oslc_specs_dsn.xml.in
 
@@ -31,6 +32,7 @@ xml_DATA = $(xml_in_files:.xml.in=.xml)
 
 # resources
 RESOURCES=$(xml_in_files:.xml.in=.raw.xml)
+
 oslc.gresources.c: oslc.gresource.xml $(RESOURCES)
 	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --target=$@ --generate-source $(srcdir)/oslc.gresource.xml
 

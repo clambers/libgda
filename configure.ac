@@ -726,7 +726,7 @@ dnl Test for MDB Tools (for MS Access files)
 MDBTOOLS_CHECK([$lib])
 
 dnl Test for OSLC
-OSLC_CHECK([$lib])
+OSLC_CHECK()
 
 dnl test for system-installed SQLite
 dnl If no SQLite is found or if the SQLite found does not have the sqlite3_table_column_metadata()
@@ -1131,7 +1131,7 @@ echo "      SQLCipher = `if test x$enable_crypto != xyes; then echo no; else ech
 echo "      JDBC = $java_found"
 echo "      WEB = `if test x$have_libsoup = xyes; then echo yes; else echo no; fi`"
 echo "      LDAP = `if test x$ldap_found = xyes; then echo yes; else echo no; fi`"
-echo "      OSLC = `if test xyes = xyes; then echo yes; else echo no; fi`"
+echo "      OSLC = `if test x$enable_oslc = xyes; then echo yes; else echo no; fi`"
 if test x"$br_cv_binreloc" != "xyes" -a x"$platform_win32" != "xyes"
 then
        echo "   Binreloc support is disabled: Libgda will not be relocatable. To enable binreloc support re-run with --enable-binreloc (see http://autopackage.org/docs/binreloc for more information)"

@@ -4,9 +4,9 @@ provider_LTLIBRARIES = libgda-oslc.la
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	-I$(top_srcdir)/libgda \
+	-I$(top_srcdir)/libgda/sqlite \
 	-I$(top_builddir) \
 	$(COREDEPS_CFLAGS) \
-	$(COREDEPS_WFLAGS) \
 	$(OSLC_CFLAGS)
 
 libgda_oslc_la_SOURCES = \

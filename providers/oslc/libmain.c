@@ -34,69 +34,69 @@ GdaServerProvider *plugin_create_provider (void);
  * Functions executed when calling g_module_open() and g_module_close()
  */
 const gchar *
-g_module_check_init (G_GNUC_UNUSED GModule *module)
+g_module_check_init(G_GNUC_UNUSED GModule *module)
 {
-        /*g_module_make_resident (module);*/
-        return NULL;
+  /*g_module_make_resident (module);*/
+  return NULL;
 }
 
 void
-g_module_unload (G_GNUC_UNUSED GModule *module)
+g_module_unload(G_GNUC_UNUSED GModule *module)
 {
-        g_free (module_path);
-        module_path = NULL;
+  g_free(module_path);
+  module_path = NULL;
 }
 
 /*
  * Normal plugin functions
  */
 void
-plugin_init (const gchar *real_path)
+plugin_init(const gchar *real_path)
 {
-	/* This is never freed, but that is OK. It is only called once. */
-	/* But it would be nice to have some cleanup function just to shut valgrind up. murrayc. */
-        if (real_path) {
-		if(module_path) {
- 			g_free (module_path);
-			module_path = NULL;
-		}
+  /* This is never freed, but that is OK. It is only called once. */
+  /* But it would be nice to have some cleanup function just to shut valgrind up. murrayc. */
+  if (real_path) {
+    if (module_path) {
+      g_free(module_path);
+      module_path = NULL;
+    }
 
-                module_path = g_strdup (real_path);
-	}
+    module_path = g_strdup(real_path);
+  }
 }
 
 const gchar *
-plugin_get_name (void)
+plugin_get_name(void)
 {
-	return OSLC_PROVIDER_NAME;
+  return OSLC_PROVIDER_NAME;
 }
 
 const gchar *
-plugin_get_description (void)
+plugin_get_description(void)
 {
-	return _("Provider for OSLC databases");
+  return _("Provider for OSLC databases");
 }
 
 gchar *
-plugin_get_dsn_spec (void)
+plugin_get_dsn_spec(void)
 {
-	gchar *ret, *dir;
+  gchar *ret, *dir;
 
-	dir = gda_gbr_get_file_path (GDA_DATA_DIR, LIBGDA_ABI_NAME, NULL);
-	ret = gda_server_provider_load_file_contents (module_path, dir, "oslc_specs_dsn.xml");
-	g_free (dir);
-	if (ret)
-		return ret;
-	else
-		return gda_server_provider_load_resource_contents ("oslc", "oslc_specs_dsn.raw.xml");
+  dir = gda_gbr_get_file_path(GDA_DATA_DIR, LIBGDA_ABI_NAME, NULL);
+  ret = gda_server_provider_load_file_contents(module_path, dir, "oslc_specs_dsn.xml");
+  g_free(dir);
+  if (ret)
+    return ret;
+  else
+    return gda_server_provider_load_resource_contents("oslc", "oslc_specs_dsn.raw.xml");
 }
 
 GdaServerProvider *
-plugin_create_provider (void)
+plugin_create_provider(void)
 {
-	GdaServerProvider *prov;
+  GdaServerProvider *prov;
 
-	prov = (GdaServerProvider*) g_object_new (GDA_TYPE_OSLC_PROVIDER, NULL);
-  g_object_set_data ((GObject *) prov, "GDA_PROVIDER_DIR", module_path);
+  prov = (GdaServerProvider *)g_object_new(GDA_TYPE_OSLC_PROVIDER, NULL);
+  g_object_set_data((GObject *)prov, "GDA_PROVIDER_DIR", module_path);
   return prov;
 }

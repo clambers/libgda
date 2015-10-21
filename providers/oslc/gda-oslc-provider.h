@@ -20,7 +20,7 @@
 #ifndef __GDA_OSLC_PROVIDER_H__
 #define __GDA_OSLC_PROVIDER_H__
 
-#include <libgda/gda-server-provider.h>
+#include <virtual/gda-vprovider-data-model.h>
 
 #define GDA_TYPE_OSLC_PROVIDER            (gda_oslc_provider_get_type())
 #define GDA_OSLC_PROVIDER(obj)            (G_TYPE_CHECK_INSTANCE_CAST (obj, GDA_TYPE_OSLC_PROVIDER, GdaOslcProvider))
@@ -32,11 +32,11 @@ typedef struct _GdaOslcProvider      GdaOslcProvider;
 typedef struct _GdaOslcProviderClass GdaOslcProviderClass;
 
 struct _GdaOslcProvider {
-	GdaServerProvider      provider;
+	GdaVproviderDataModel provider;
 };
 
 struct _GdaOslcProviderClass {
-	GdaServerProviderClass parent_class;
+	GdaVproviderDataModelClass parent_class;
 };
 
 G_BEGIN_DECLS

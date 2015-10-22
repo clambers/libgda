@@ -19,6 +19,9 @@
 
 #undef GDA_DISABLE_DEPRECATED
 
+#define ENCBUFFER 4
+#define MAXBUFFER 4096
+
 #include <stdlib.h>
 #include <string.h>
 #include <glib/gi18n-lib.h>
@@ -31,6 +34,8 @@
 #include <libgda/gda-data-model-array.h>
 #include <libgda/gda-statement-extra.h>
 #include <libgda/sql-parser/gda-sql-parser.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #include "gda-oslc.h"
 #include "gda-oslc-provider.h"
 
@@ -202,6 +207,7 @@ gda_oslc_provider_create_connection(GdaServerProvider *provider)
 static void
 gda_oslc_free_cnc_data(OslcConnectionData *cdata)
 {
+  xmlFreeDoc(cdata->doc);
   g_free(cdata);
 }
 
@@ -214,16 +220,21 @@ gda_oslc_provider_prepare_connection(GdaServerProvider *provider,
   GFile *f;
   GInputStream *is;
   gssize res;
-  gchar buf[4096];
+  gchar enc[ENCBUFFER], buf[MAXBUFFER];
   OslcConnectionData *cdata;
   GdaServerProviderBase *parent_functions;
   const gchar *uri;
+  xmlParserCtxtPtr ctx;
   GError *err;
 
   g_return_val_if_fail(GDA_IS_OSLC_PROVIDER(provider), FALSE);
   g_return_val_if_fail(GDA_IS_CONNECTION(cnc), FALSE);
 
   err = NULL;
+
+  /**
+   * Chain up to the parent's prepare_connection() method.
+   */
 
   parent_functions = gda_server_provider_get_impl_functions_for_class(parent_class, GDA_SERVER_PROVIDER_FUNCTIONS_BASE);
 
@@ -232,8 +243,9 @@ gda_oslc_provider_prepare_connection(GdaServerProvider *provider,
       return FALSE;
   }
 
-  cdata = g_malloc(sizeof(OslcConnectionData));
-  cdata->root = g_string_new(NULL);
+  /**
+   * Validate connection parameters.
+   */
 
   uri = gda_quark_list_find(params, "URI");
   if (!uri) {
@@ -241,23 +253,44 @@ gda_oslc_provider_prepare_connection(GdaServerProvider *provider,
     return FALSE;
   }
 
-  g_message("%s", uri);
+  /**
+   * Create connection data, fill it with some information, and attach
+   * it to the connection object.
+   */
+
+  cdata = g_malloc(sizeof(OslcConnectionData));
+
+  g_return_val_if_fail((cdata > 0), FALSE);
 
   f = g_file_new_for_uri(uri);
   is = G_INPUT_STREAM(g_file_read(f, NULL, &err));
 
-  if (!is)
-    g_error("input stream broken");
+  g_return_val_if_fail(is, FALSE);
 
-  while ((res = g_input_stream_read(is, buf, 4096, NULL, &err)) > 0) {
-    g_string_append_len(cdata->root, buf, res);
-    g_message("%li bytes read", res);
-  }
+  /**
+   * Start by reading ENCBUFFER bytes to guess the file encoding.
+   */
+  if ((res = g_input_stream_read(is, enc, ENCBUFFER, NULL, &err)) > 0)
+    ctx = xmlCreatePushParserCtxt(NULL, NULL, enc, ENCBUFFER, uri);
 
-  if (!res)
-    g_message("read operation complete");
-  else if (res == -1)
+  /**
+   * Read the rest of the document, in MAXBUFFER-byte chunks, into the
+   * XML parser.
+   */
+  while ((res = g_input_stream_read(is, buf, MAXBUFFER, NULL, &err)) > 0)
+    xmlParseChunk(ctx, buf, res, 0);
+
+  /**
+   * Validate and clean up resources.
+   */
+  if (res == 0) {
+    xmlParseChunk(ctx, buf, 0, 1);
+    cdata->doc = ctx->myDoc;
+    xmlFreeParserCtxt(ctx);
+  } else if (res == -1) {
     g_error("read operation broken");
+    return FALSE;
+  }
 
   g_object_unref(is);
   g_object_unref(f);

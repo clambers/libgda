@@ -28,10 +28,11 @@
 #include <libgda/libgda.h>
 #include <libgda/gda-connection.h>
 #include <libgda/gda-connection-private.h>
+#include <libxml/tree.h>
 
 typedef struct {
   GdaServerProviderConnectionData parent;
-  GString *root;
+  xmlDocPtr doc;
 } OslcConnectionData;
 
 #endif
